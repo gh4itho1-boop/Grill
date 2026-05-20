@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Holmlia Grill — Bestill Online</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{--bg:#f8f9fa;--surface:#fff;--text:#1a1a2e;--muted:#6b7280;--red:#e63946;--redDark:#c1121f;--gold:#f4a261;--border:#e5e7eb;--shadow:0 4px 12px rgba(0,0,0,0.08)}
+        body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased}
+        .app{max-width:480px;margin:0 auto;background:var(--bg);min-height:100vh;position:relative}
+        
+        /* Top bar */
+        .topbar{background:var(--text);color:rgba(255,255,255,0.9);padding:6px 16px;display:flex;justify-content:space-between;font-size:11px;font-weight:600}
+        
+        /* Header */
+        .header{background:var(--surface);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+        .brand{display:flex;align-items:center;gap:10px}
+        .brand-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--red),var(--redDark));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px}
+        .brand h1{font-size:18px;font-weight:800;letter-spacing:-0.3px}
+        .brand span{font-size:11px;color:var(--muted);font-weight:500}
+        .cart-btn{background:var(--bg);border:1.5px solid var(--border);padding:8px 14px;border-radius:50px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;position:relative}
+        .cart-btn:hover{border-color:var(--red)}
+        .cart-pill{position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;font-size:10px;font-weight:800;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(0);transition:all .3s}
+        .cart-pill.show{opacity:1;transform:scale(1)}
+        
+        /* Category nav */
+        .catnav{background:var(--surface);padding:10px 16px;border-bottom:1px solid var(--border);position:sticky;top:62px;z-index:99;overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+        .catnav::-webkit-scrollbar{display:none}
+        .catbtn{display:inline-block;padding:7px 14px;border:1.5px solid var(--border);background:var(--surface);border-radius:50px;font-family:inherit;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;margin-right:6px;transition:all .2s}
+        .catbtn:hover{border-color:var(--red);color:var(--red)}
+        .catbtn.active{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 2px 8px rgba(230,57,70,0.3)}
+        
+        /* Menu */
+        .menu{padding:14px 16px 80px}
+        .section{margin-bottom:28px}
+        .section-title{font-size:16px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+        .section-sub{font-size:12px;color:var(--muted);font-weight:500;margin:-8px 0 12px 26px}
+        
+        /* Item card */
+        .item{background:var(--surface);border-radius:14px;padding:12px;display:flex;gap:12px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:10px;transition:all .2s}
+        .item:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.12)}
+        .item-img{width:68px;height:68px;background:linear-gradient(135deg,#fff5f5,#ffe0e0);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0;position:relative}
+        .badge{position:absolute;top:-3px;left:-3px;background:var(--gold);color:var(--text);font-size:8px;font-weight:800;text-transform:uppercase;padding:2px 6px;border-radius:6px 0 6px 0}
+        .badge.popular{background:var(--red);color:#fff}
+        .item-body{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between}
+        .item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+        .item-top h3{font-size:14px;font-weight:700;line-height:1.3}
+        .price{font-size:14px;font-weight:800;color:var(--red);white-space:nowrap}
+        .desc{font-size:11px;color:var(--muted);line-height:1.4;margin:4px 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .addbtn{align-self:flex-start;display:flex;align-items:center;gap:5px;padding:7px 14px;background:var(--text);color:#fff;border:none;border-radius:50px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s}
+        .addbtn:hover{background:var(--red);transform:scale(1.05)}
+        .addbtn:active{transform:scale(0.95)}
+        
+        /* Cart drawer */
+        .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);z-index:200;opacity:0;visibility:hidden;transition:all .3s}
+        .overlay.on{opacity:1;visibility:visible}
+        .drawer{position:fixed;top:0;right:0;width:100%;max-width:400px;height:100vh;background:var(--surface);z-index:201;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .35s cubic-bezier(0.32,0.72,0,1)}
+        .drawer.on{transform:translateX(0)}
+        .dheader{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+        .dheader h2{font-size:18px;font-weight:800}
+        .dclose{width:32px;height:32px;border-radius:50%;border:none;background:var(--bg);font-size:16px;cursor:pointer}
+        .dbody{flex:1;overflow-y:auto;padding:12px 20px}
+        .dempty{text-align:center;padding:50px 20px;color:var(--muted)}
+        .dempty div{font-size:48px;margin-bottom:12px;opacity:.4}
+        .dempty h3{font-size:15px;color:var(--text);margin-bottom:4px}
+        .dempty p{font-size:13px}
+        
+        .citem{display:flex;gap:10px;padding:12px 0;border-bottom:1px solid var(--border);align-items:center}
+        .cimg{width:48px;height:48px;background:linear-gradient(135deg,#fff5f5,#ffe0e0);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+        .cinfo{flex:1;min-width:0}
+        .cinfo h4{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .cinfo .cprice{font-size:12px;color:var(--red);font-weight:700;margin-top:2px}
+        .cqty{display:flex;align-items:center;gap:8px;margin-top:4px}
+        .cq{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border);background:#fff;font-size:13px;font-weight:700;cursor:pointer}
+        .cq:hover{border-color:var(--red);color:var(--red)}
+        .rmv{background:none;border:none;font-size:16px;cursor:pointer;opacity:.3;transition:opacity .2s}
+        .rmv:hover{opacity:1;color:var(--red)}
+        
+        .dfoot{padding:16px 20px;border-top:1px solid var(--border);background:var(--bg)}
+        .sum{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;color:var(--muted)}
+        .sum.total{border-top:1px solid var(--border);margin-top:6px;padding-top:10px;font-size:16px;font-weight:800;color:var(--text)}
+        .sum.total span:last-child{color:var(--red)}
+        .ckbtn{width:100%;padding:14px;background:linear-gradient(135deg,var(--red),var(--redDark));color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;display:flex;justify-content:space-between;align-items:center;margin-top:10px;box-shadow:0 4px 16px rgba(230,57,70,0.3)}
+        .ckbtn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(230,57,70,0.4)}
+        
+        /* Demo banner */
+        .demo{position:fixed;bottom:0;left:0;right:0;background:var(--text);color:rgba(255,255,255,0.85);padding:8px 16px;display:flex;justify-content:space-between;font-size:10px;font-weight:700;z-index:90;max-width:480px;margin:0 auto}
+        .demo span:last-child{color:var(--gold)}
+        
+        /* Modal */
+        .modal{position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;transition:all .3s}
+        .modal.on{opacity:1;visibility:visible}
+        .mbox{background:var(--surface);border-radius:20px;padding:32px 24px;max-width:340px;width:100%;text-align:center;box-shadow:var(--shadow);transform:scale(0.9) translateY(20px);transition:all .3s cubic-bezier(0.34,1.56,0.64,1)}
+        .modal.on .mbox{transform:scale(1) translateY(0)}
+        .mbox .icon{font-size:48px;margin-bottom:12px}
+        .mbox h2{font-size:20px;font-weight:800;margin-bottom:10px}
+        .mbox p{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px}
+        .mtag{display:inline-block;background:linear-gradient(135deg,var(--red),var(--redDark));color:#fff;padding:5px 16px;border-radius:50px;font-size:11px;font-weight:700;margin-bottom:16px}
+        .mbtn{width:100%;padding:12px;background:var(--text);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
+        .mbtn:hover{background:var(--red)}
+        
+        /* Toast */
+        .toast{position:fixed;bottom:50px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--text);color:#fff;padding:10px 22px;border-radius:50px;font-size:13px;font-weight:600;z-index:250;opacity:0;transition:all .4s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;white-space:nowrap}
+        .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+        
+        /* Hide sections */
+        .section.hide{display:none}
+    </style>
+</head>
+<body>
+<div class="app">
+    <div class="topbar"><span>🛵 Gratis levering over 300 kr</span><span>⏱️ 25-35 min</span></div>
+    
+    <header class="header">
+        <div class="brand">
+            <div class="brand-icon">🔥</div>
+            <div><h1>Holmlia Grill</h1><span>Oslo • Grill • Kebab • Burger</span></div>
+        </div>
+        <button class="cart-btn" onclick="toggleCart()">
+            🛒 <span id="cartLabel">Handlekurv</span>
+            <span class="cart-pill" id="pill">0</span>
+        </button>
+    </header>
+    
+    <nav class="catnav">
+        <button class="catbtn active" onclick="filter('all')">Alt</button>
+        <button class="catbtn" onclick="filter('burgers')">🍔 Burgere</button>
+        <button class="catbtn" onclick="filter('kebab')">🥙 Kebab</button>
+        <button class="catbtn" onclick="filter('grill')">🔥 Grill</button>
+        <button class="catbtn" onclick="filter('sides')">🍟 Tilbehør</button>
+        <button class="catbtn" onclick="filter('drinks')">🥤 Drikke</button>
+    </nav>
+    
+    <div class="menu">
+        <!-- BURGERS -->
+        <div class="section" data-cat="burgers">
+            <div class="section-title">🍔 Burgere</div>
+            <div class="section-sub">Smash-grillet perfeksjon</div>
+            
+            <div class="item">
+                <div class="item-img">🍔</div>
+                <div class="item-body">
+                    <div class="item-top"><h3>Smashburger Single</h3><span class="price">99 kr</span></div>
+                    <p class="desc">Saftig biff, salat, løk, hjemmelaget dressing, chili majones, BBQ saus & ost</p>
+                    <button class="addbtn" onclick="add('smash-single','Smashburger Single',99,'🍔')"><span>+</span> Legg til</button>
+                </div>
+            </div>
+            <div class="item">
+                <div class="item-img">🍔<span class="badge popular">POPULÆR</span></div>
+                <div class="item-body">
+                    <div class="item-top"><h3>Smashburger Dobbel</h3><span class="price">149 kr</span></div>
+                    <p class="desc">Dobbelt biff, salat, løk, hjemmelaget dressing, chili majones, BBQ saus & ost</p>
+                    <button class="addbtn" onclick="add('smash-dobbel','Smashburger Dobbel',149,'🍔')"><span>+</span> Legg til</button>
+                </div>
+            </div>
+            <div class="item">
+                <div class="item-img">🍗</div>
+                <div class="item-body">
+                    <div class="item-top"><h3>Chicken New York</h3><span class="price">125 kr</span></div>
+                    <p class="desc">Kyllingfilet med fresh salat og dressing</p>
+                    <button class="addbtn" onclick="add('chicken-ny','Chicken New York',125,'🍗')"><span>+</span> Legg til</button>
+                </div>
+            </div>
+            <div class="item">
+                <div class="item-img">🌶️<<span class="badge">NYHET</span></div>
+                <div class="item-body">
+                    <div class="item-top"><h3>Spicy Burger</h3><span class="price">185 kr</span></div>
+                    <p class="desc">Double beef patties, brioche bun, spicy touch</p>
+                    <button class="addbtn" onclick="add('spicy','Spicy Burger',185,'🌶️')"><span>+</span> Legg til</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- KEBAB -->
+        <div class="section" data-cat="kebab">
+            <div class="section-title">🥙 Kebab</div>
+            <div class="section-sub">Autentisk og fersk</div>
+            
+            <div class="item">
+                <div class="item-img">🥙<<span class="badge popular">BESTSELGER</span></div>
+                <div class="item-body">
+                    <div class="item-top"><h3>Kebab i Pita</h3><span class="price">89 kr</span></div>
+                    <p class="desc">Kebab i pita med fersk salat og dressing</p>
+                    <button class="addbtn" onclick="add('kebab-pita','Kebab i Pita',89,'🥙')"><span>+</span> Legg til</button>
+                </div>
+            </div>
+            <div class="item">
+                <div class="item-img">🥙</div>
+                <div class="item-body">
+                    <div class="item-top"><h3>Kyllingkebab i Pita</h3><span class="price">125 kr</span></div>
+                    <p class="desc">Kyllingkebab med salat og dressing</p>
+                    <button class="addbtn" onclick="add('kylling-pita','Kyllingkebab i Pita',125,'🥙')"><span>+</span> Legg til</button>
+                </div>
+            </div>
+            <div class="item">
+                <div class="item-img">🥖<<span class="badge">BILLIGST</span></div>
+                <div class="item-body">
+                    <div class="item-top"><h3>Kebab Baguett</h3><span class="price">69 kr</span></div>
+                    <p class="desc">Klassisk kebab i baguett med alle tilbehør</p>
+                    <button class="addbtn" onclick="add('kebab-baguett','Kebab Baguett',69,'🥖')"><span>+</span> Legg til</button>
+                </div>
+            </div>
+            <div class="item">
+                <div class="item-img">🍽️</div>
+                <div class="item-body">
+                    <div class="item-top"><h3>Kebab Tallerken</h3><span class="price">149 kr</span></div>
+                    <p class="desc">Generøs porsjon med ris, salat, brød & saus</p>
+                    <button class="addbtn" onclick="add('kebab-tall','Kebab Tallerken',149,'🍽️')"><span>+</span> Legg til</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- GRILL -->
+        <div class="section" data-cat="grill">
+            <div class="section-title">🔥 Fra Grillen</div>
+            <div class="section-sub">Røyk og kull, ekte smak</div>
+            
+            <div class="item">
+                <div class="item-img">🍗</div>
+                <div class="item-body">
+                    <div class="item-top"><h3>Grillkylling</h3><span class="price">169 kr</span></div>
+                    <p class="desc">Halv kylling marinert & grillet til perfeksjon</p>
+                    <button class="addbtn" onclick="add('grill-kylling','Grillkylling',169,'🍗')"><span>+</span> Legg til</button>
+                </div>
+            </div>
+            <div class="item">
+                <div class="item-img">🥩<<span class="badge popular">PREMIUM</span></div>
+                <div class="item-body">
+                    <div class="item-top"><h3>Biff Bites</h3><span class="price">199 kr</span></div>
+                    <p class="desc">Tendre biffbiter med chimichurri</p>
+                    <button class="addbtn" onclick="add('biff','Biff Bites',199,'🥩')"><span>+</span> Legg til</button>
+                </div>
+            </div>
+            <div class="item">
+                <div class="item-img">🍖</div>
+                <div class="item-body">
+                    <div class="item-top"><h3>Lammespyd</h3><span class="price">179 kr</span></div>
+                    <p class="desc">To saftige spyd med middelhavskrydder & tzatziki</p>
+                    <button class="addbtn" onclick="add('lamme','Lammespyd',179,'🍖')"><span>+</span> Legg til</button>
+                </div>
+            </div>
+            <div class="item">
+                <div class="item-img">🔥<<span class="badge">SIGNATUR</span></div>
+                <div class="item-body">
+                    <div class="item-top"><h3>Charcoal Chicken</h3><span class="price">189 kr</span></div>
+                    <p class="desc">Kullgrillet kylling med hummus, fries & hvitløkssaus</p>
+                    <button class="addbtn" onclick="add('charcoal','Charcoal Chicken',189,'🔥')"><span>+</span> Legg til</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SIDES -->
+        <div class="section" data-cat="sides">
+            <div class="section-title">🍟 Tilbehør</div>
+            <div class="section-sub">Det lille ekstra</div>
+            
+            <div class="item">
+                <div class="item-img">🍟</div>
+                <div class="item-body">
+                    <div class="item-top"><h3>Pommes Frites</h3><span class="price">49 kr</span></div>
+                    <p class="desc">Sprø og gyldne, perfekt krydret</p>
+                    <button class="addbtn" onclick="add('pommes','Pommes Frites',49,'🍟')"><span>+</span> Legg til</button>
+                </div>
+            </div>
+            <div class="item">
+                <div class="item-img">🧅</div>
+                <div class="item-body">
+                    <div class="item-top"><h3>Løkringer</h3><span class="price">59 kr</span></div>
+                    <p class="desc">Sprøstekte med spicy dip</p>
+                    <button class="addbtn" onclick="add('lok','Løkringer',59,'🧅')"><span>+</span> Legg til</button>
+                </div>
+            </div>
+            <div class="item">
+                <div class="item-img">🥗</div>
+                <div class="item-body">
+                    <div class="item-top"><h3>Cæsarsalat</h3><span class="price">89 kr</span></div>
+                    <p class="desc">Kylling, parmesan, krutonger & Cæsar-dressing</p>
+                    <button class="addbtn" onclick="add('caesar','Cæsarsalat',89,'🥗')"><span>+</span> Legg til</button>
+                </div>
+            </div>
+            <div class="item">
+                <div class="item-img">🥬</div>
+                <div class="item-body">
+                    <div class="item-top"><h3>Coleslaw</h3><span class="price">39 kr</span></div>
+                    <p class="desc">Fresh kålsalat med cremet dressing</p>
+                    <button class="addbtn" onclick="add('cole','Coleslaw',39,'🥬')"><span>+</span> Legg til</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- DRINKS -->
+        <div class="section" data-cat="drinks">
+            <div class="section-title">🥤 Drikke</div>
+            <div class="section-sub">Forfriskende</div>
+            
+            <div class="item">
+                <div class="item-img">🥤</div>
+                <div class="item-body">
+                    <div class="item-top"><h3>Coca-Cola 0.5L</h3><span class="price">35 kr</span></div>
+                    <p class="desc">Original eller Zero</p>
+                    <button class="addbtn" onclick="add('cola','Coca-Cola 0.5L',35,'🥤')"><span>+</span> Legg til</button>
+                </div>
+            </div>
+            <div class="item">
+                <div class="item-img">🧃</div>
+                <div class="item-body">
+                    <div class="item-top"><h3>Fanta / Sprite 0.5L</h3><span class="price">35 kr</span></div>
+                    <p class="desc">Velg din favoritt</p>
+                    <button class="addbtn" onclick="add('fanta','Fanta/Sprite 0.5L',35,'🧃')"><span>+</span> Legg til</button>
+                </div>
+            </div>
+            <div class="item">
+                <div class="item-img">💧</div>
+                <div class="item-body">
+                    <div class="item-top"><h3>Vann 0.5L</h3><span class="price">25 kr</span></div>
+                    <p class="desc">Med eller uten kullsyre</p>
+                    <button class="addbtn" onclick="add('vann','Vann 0.5L',25,'💧')"><span>+</span> Legg til</button>
+                </div>
+            </div>
+            <div class="item">
+                <div class="item-img">🍫</div>
+                <div class="item-body">
+                    <div class="item-top"><h3>Sjokolademelk</h3><span class="price">29 kr</span></div>
+                    <p class="desc">Kald og forfriskende</p>
+                    <button class="addbtn" onclick="add('sjoko','Sjokolademelk',29,'🍫')"><span>+</span> Legg til</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="demo"><span>⚠️ DEMO — Ingen faktisk bestilling</span><span>Laget av Ghaithollah</span></div>
+</div>
+
+<!-- CART DRAWER -->
+<div class="overlay" id="ov" onclick="toggleCart()"></div>
+<div class="drawer" id="dr">
+    <div class="dheader"><h2>Din bestilling</h2><button class="dclose" onclick="toggleCart()">✕</button></div>
+    <div class="dbody" id="db">
+        <div class="dempty"><div>🛒</div><h3>Handlekurven er tom</h3><p>Legg til noe godt fra menyen!</p></div>
+    </div>
+    <div class="dfoot" id="df" style="display:none">
+        <div class="sum"><span>Subtotal</span><span id="st">0 kr</span></div>
+        <div class="sum"><span>Levering</span><span id="dl">49 kr</span></div>
+        <div class="sum total"><span>Totalt</span><span id="gt">0 kr</span></div>
+        <button class="ckbtn" onclick="checkout()"><span>Gå til kassen</span><span id="ct">0 kr</span></button>
+    </div>
+</div>
+
+<!-- DEMO MODAL -->
+<div class="modal" id="md">
+    <div class="mbox">
+        <div class="icon">⚠️</div>
+        <h2>Demoversjon</h2>
+        <p>Dette er en demonstrasjonsnettside for Holmlia Grill. <strong>Ingen faktisk bestilling</strong> vil bli behandlet.</p>
+        <div class="mtag">Laget av Ghaithollah</div>
+        <button class="mbtn" onclick="closeM()">Skjønner!</button>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="to"><span id="tm">Lagt til!</span></div>
+
+<script>
+let cart=[];
+function add(id,n,p,e){let x=cart.find(c=>c.id===id);if(x)x.q++;else cart.push({id,n,p,e,q:1});up();toast(n+' lagt til!')}
+function rm(id){cart=cart.filter(c=>c.id!==id);up()}
+function qy(id,d){let x=cart.find(c=>c.id===id);if(!x)return;x.q+=d;if(x.q<=0)rm(id);else up()}
+function up(){
+    let t=cart.reduce((s,c)=>s+c.q,0),st=cart.reduce((s,c)=>s+c.p*c.q,0),dl=st>=300?0:49,gt=st+dl;
+    document.getElementById('pill').textContent=t;document.getElementById('pill').classList.toggle('show',t>0);
+    if(!cart.length){document.getElementById('db').innerHTML='<div class="dempty"><div>🛒</div><h3>Handlekurven er tom</h3><p>Legg til noe godt fra menyen!</p></div>';document.getElementById('df').style.display='none'}
+    else{document.getElementById('db').innerHTML=cart.map(c=>`<div class="citem"><div class="cimg">${c.e}</div><div class="cinfo"><h4>${c.n}</h4><div class="cprice">${c.p} kr</div><div class="cqty"><button class="cq" onclick="qy('${c.id}',-1)">−</button><span>${c.q}</span><button class="cq" onclick="qy('${c.id}',1)">+</button></div></div><button class="rmv" onclick="rm('${c.id}')">🗑️</button></div>`).join('');document.getElementById('df').style.display='block'}
+    document.getElementById('st').textContent=st+' kr';document.getElementById('dl').textContent=dl===0?'Gratis':dl+' kr';document.getElementById('dl').style.color=dl===0?'#2ecc71':'';document.getElementById('gt').textContent=gt+' kr';document.getElementById('ct').textContent=gt+' kr';
+}
+function toggleCart(){document.getElementById('dr').classList.toggle('on');document.getElementById('ov').classList.toggle('on');document.body.style.overflow=document.getElementById('dr').classList.contains('on')?'hidden':''}
+function filter(c){document.querySelectorAll('.catbtn').forEach(b=>b.classList.toggle('active',b.textContent.includes(c==='all'?'Alt':c==='burgers'?'Burgere':c==='kebab'?'Kebab':c==='grill'?'Grill':c==='sides'?'Tilbehør':'Drikke')));document.querySelectorAll('.section').forEach(s=>s.classList.toggle('hide',c!=='all'&&s.dataset.cat!==c))}
+function checkout(){document.getElementById('md').classList.add('on');toggleCart()}
+function closeM(){document.getElementById('md').classList.remove('on')}
+function toast(m){document.getElementById('tm').textContent=m;let t=document.getElementById('to');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(document.getElementById('md').classList.contains('on'))closeM();else if(document.getElementById('dr').classList.contains('on'))toggleCart()}});
+document.getElementById('md').addEventListener('click',e=>{if(e.target===document.getElementById('md'))closeM()});
+up();
+</script>
+</body>
+</html>
